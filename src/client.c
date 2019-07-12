@@ -48,6 +48,35 @@ urlinfo_t *parse_url(char *url)
   ///////////////////
   // IMPLEMENT ME! //
   ///////////////////
+  
+  // Remove HTTP/S://
+  char *http = strstr(hostname, "http://");
+  if (http != NULL) {
+    hostname += 7;
+  }
+
+  char *https = strstr(hostname, "https://");
+  if (http != NULL) {
+    hostname += 8;
+  }
+
+  // Find first slash, move one character over to set path, set slash = '\0'
+  char *slash = strchr(hostname, '/');
+  if (slash != NULL)
+  {
+    urlinfo->path = slash + 1;
+    *slash = '\0';
+  }
+
+  // Find first colon, move one character over to set port, set colon = '\0'
+  char *colon = strchr(hostname, ':');
+  if (colon != NULL)
+  {
+    urlinfo->port = colon + 1;
+    *colon = '\0';
+  }
+
+  urlinfo->hostname = hostname;
 
   return urlinfo;
 }
