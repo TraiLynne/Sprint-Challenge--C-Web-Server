@@ -48,6 +48,35 @@ urlinfo_t *parse_url(char *url)
   ///////////////////
   // IMPLEMENT ME! //
   ///////////////////
+  
+  // Remove HTTP/S://
+  char *http = strstr(hostname, "http://");
+  if (http != NULL) {
+    hostname += 7;
+  }
+
+  char *https = strstr(hostname, "https://");
+  if (http != NULL) {
+    hostname += 8;
+  }
+
+  // Find first slash, move one character over to set path, set slash = '\0'
+  char *slash = strchr(hostname, '/');
+  if (slash != NULL)
+  {
+    urlinfo->path = slash + 1;
+    *slash = '\0';
+  }
+
+  // Find first colon, move one character over to set port, set colon = '\0'
+  char *colon = strchr(hostname, ':');
+  if (colon != NULL)
+  {
+    urlinfo->port = colon + 1;
+    *colon = '\0';
+  }
+
+  urlinfo->hostname = hostname;
 
   return urlinfo;
 }
@@ -71,6 +100,21 @@ int send_request(int fd, char *hostname, char *port, char *path)
   ///////////////////
   // IMPLEMENT ME! //
   ///////////////////
+
+  int request_length = sprintf(
+    request,
+    "GET /%s HTTP/1.1\n"
+    "Host: %s:%s\n"
+    "Connection: closed\n"
+    "\n",
+    path, hostname, port
+  );
+
+  rv = send(fd, request, request_length, 0);
+
+  if (rv < 0) {
+    perror("Error occurred while sending request");
+  }
 
   return 0;
 }
@@ -96,6 +140,24 @@ int main(int argc, char *argv[])
   ///////////////////
   // IMPLEMENT ME! //
   ///////////////////
+
+  // Parse URL
+  urlinfo_t *urlinfo = parse_url(argv[1]);
+
+  // Initialize a socket
+  sockfd = get_socket(urlinfo->hostname, urlinfo->port);
+
+  // Construct and Send request
+  send_request(sockfd, urlinfo->hostname, urlinfo->port, urlinfo->path);
+
+  // Loop `recv` call
+  while((numbytes = recv(sockfd, buf, BUFSIZE - 1, 0)) > 0) {
+    printf("%s\n", buf);
+  }
+
+  // Clean Up
+  free(urlinfo);
+  close(sockfd);
 
   return 0;
 }
