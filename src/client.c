@@ -101,6 +101,21 @@ int send_request(int fd, char *hostname, char *port, char *path)
   // IMPLEMENT ME! //
   ///////////////////
 
+  int request_length = sprintf(
+    request,
+    "GET /%s HTTP/1.1\n"
+    "Host: %s:%s\n"
+    "Connection: closed\n"
+    "\n",
+    path, hostname, port
+  );
+
+  rv = send(fd, request, request_length, 0);
+
+  if (rv < 0) {
+    perror("Error occurred while sending request");
+  }
+
   return 0;
 }
 
